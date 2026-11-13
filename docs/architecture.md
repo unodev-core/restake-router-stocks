@@ -119,7 +119,7 @@ mapping(address token => PendingChange) public pendingChanges; // one pending op
 
 Notes:
 
-- **Disable blocks both buy and sell.** It is an emergency switch (wrong address, Ondo incident, delisting). If we later want sell-only wind-down, we can add a `SellOnly` status without changing storage layout.
+- **Disable blocks both buy and sell** (decided). It is an emergency switch (wrong address, Ondo incident, delisting). If we later want sell-only wind-down, we can add a `SellOnly` status without changing storage layout.
 - Tokens are never deleted. This keeps the history and `_tokenList` stable.
 - A queued change records its parameters. Execute applies exactly what was queued, so there is no "queue A, execute B".
 
@@ -221,7 +221,7 @@ sequenceDiagram
     R->>R: permit (try/catch) → transferFrom(caller → router, amountIn)
     R->>O: mint(quote, amountIn)  [exact-approve, reset to 0 after]
     O-->>R: stock tokens
-    R->>R: stockOut = balanceAfter - balanceBefore; require ≥ minStockOut
+    R->>R: stockOut = balanceAfter - balanceBefore, require ≥ minStockOut
     R->>C: transfer stockOut to recipient
     R-->>R: emit Bought(...)
 ```
@@ -332,6 +332,6 @@ Tooling: Foundry, OpenZeppelin Contracts (Upgradeable) v5, Slither in CI, an ext
 1. **Ondo integration:** primary mint/redeem with an attestation, or secondary DEX liquidity, or both? Are quotes bound to the router or to the user? Is the router address required on Ondo's allowlist?
 2. **Payment token:** USDC only, or several stablecoins (would make `paymentToken` a whitelisted set too)?
 3. **Fees:** do partners or Restake take a fee in the router? Adding it later changes events and the math.
-4. **Disable semantics:** should a disabled token still allow `sell` so users can exit? (Current design: no, full stop.)
+4. ~~**Disable semantics:** should a disabled token still allow `sell` so users can exit?~~ **Decided:** no. Disable blocks both buy and sell (see §4.2).
 5. **Allowlist granularity:** are per-partner permissions enough, or is a per-jurisdiction flag also needed?
 6. **Chains:** Ethereum only, or also BNB / other chains where Ondo GM is deployed? This affects permit support and the config.
